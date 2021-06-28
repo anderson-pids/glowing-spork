@@ -1,0 +1,19 @@
+version: "3"
+services:
+    aws-auth:
+        container_name: aws-auth
+        image: andersonpids/glowing-spork:aws-auth
+        build:
+            context: .
+            args:
+                - USER_ID=${U_ID:-1024}
+                - GROUP_ID=${G_ID:-1024}
+        environment:
+            - PERMANENT_AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+            - PERMANENT_AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+            - AWS_ACCOUNT_ID=${AWS_ACCOUNT_ID}
+            - AWS_REGION=${AWS_REGION:-sa-east-1}
+            - AWS_TOKEN_DURATION=${AWS_TOKEN_DURATION:-129600} #36hs
+            - AWS_PROFILE=${AWS_PROFILE:-default}
+        volumes:
+            - ~/.aws:/home/app/.aws

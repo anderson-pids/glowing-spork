@@ -13,19 +13,22 @@ WORKDIR ${WORKDIR}
 
 # Create image user with default id 1024
 # ---------------------------------------
-ONBUILD ARG USER_ID=1024
-ONBUILD ARG GROUP_ID=1024
+ARG USER_ID=1024
+ARG GROUP_ID=1024
 
-ONBUILD RUN create-user.sh ${USER_ID} ${GROUP_ID}
-ONBUILD USER ${USER_NAME}
+COPY scripts/* /usr/local/bin/
+RUN create-user ${USER_ID} ${GROUP_ID}
 # ---------------------------------------
 
+# Install dependencies
+# ---------------------------------------
 RUN apk update \
     && apk add --no-cache \
     bash \
-    jq
+    jq \
+    aws-cli
+# ---------------------------------------
 
-COPY scripts/create-user /usr/local/bin
-
+USER ${USER_NAME}
 # Return to default entrypoint
-ENTRYPOINT []
+ENTRYPOINT ["aws-token-generator"]

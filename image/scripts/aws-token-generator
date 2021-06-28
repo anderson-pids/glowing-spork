@@ -1,0 +1,50 @@
+#!/bin/sh
+
+# Output files
+AWS_CREDENTIALS_FILE=/home/app/.aws/credentials
+AWS_CONFIG_FILE=/home/app/.aws/config
+
+# Script params
+AWS_USERNAME=$1
+MFA_CODE=$2
+
+# Credencial Config
+AWS_OUTPUT_PROFILE=$AWS_PROFILE
+AWS_REGION=$AWS_REGION
+SESSION_TOKEN_DURATION=$AWS_TOKEN_DURATION # 36hs
+
+ERROR="/tmp/aws-error"
+
+# Check aws variables are set 
+if [ -z "$PERMANENT_AWS_ACCESS_KEY_ID" ] || [ -z "$PERMANENT_AWS_SECRET_ACCESS_KEY" ] || [ -z "$AWS_ACCOUNT_ID" ];
+then
+  echo "[ERROR] environment variables AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY and AWS_ACCOUNT_ID must be set"
+  exit 1;
+fi
+
+# Create AWS permanent config profile
+printf "[${AWS_OUTPUT_PROFILE}]\noutput=json\nregion=${AWS_REGION}\n" > ${AWS_CONFIG_FILE}
+
+# Create AWS permanent credentials profile
+printf "[${AWS_OUTPUT_PROFILE}]\naws_access_key_id=${PERMANENT_AWS_ACCESS_KEY_ID}\naws_secret_access_key=${PERMANENT_AWS_SECRET_ACCESS_KEY}\n" > ${AWS_CREDENTIALS_FILE}
+
+# Get AWS credentials by aws-cli
+AWS_CREDENTIALS="$(aws sts get-session-token --duration-seconds ${SESSION_TOKEN_DURATION} --serial-number arn:aws:iam::${AWS_ACCOUNT_ID}:mfa/${AWS_USERNAME} --token-code ${MFA_CODE} 2>${ERROR} | jq '.Credentials')" 
+
+# Check response errors
+if [ -s $ERROR ];
+then
+  cat $ERROR
+  exit 1
+fi
+
+# Retrieve values from AWS credentials
+AWS_ACCESS_KEY_ID="$(echo ${AWS_CREDENTIALS} | jq -r '.AccessKeyId')"
+AWS_SECRET_ACCESS_KEY="$(echo ${AWS_CREDENTIALS} | jq -r '.SecretAccessKey')"
+AWS_SESSION_TOKEN="$(echo ${AWS_CREDENTIALS} | jq -r '.SessionToken')"
+AWS_SESSION_EXPIRATION="$(echo ${AWS_CREDENTIALS} | jq -r '.Expiration')"
+
+# Print AWS session credentials
+printf "[${AWS_OUTPUT_PROFILE}]\naws_access_key_id=${AWS_ACCESS_KEY_ID}\naws_secret_access_key=${AWS_SECRET_ACCESS_KEY}\naws_session_token=${AWS_SESSION_TOKEN}" > ${AWS_CREDENTIALS_FILE}
+
+echo "[INFO] AWS credentials file successfully created/updated (expires ${AWS_SESSION_EXPIRATION})"
