@@ -1,0 +1,41 @@
+#!/bin/sh
+
+set -eu
+
+USER_ID=${1}
+GROUP_ID=${2}
+
+
+# Check if user and group already exist
+# ---------------------------------------
+USER_WITH_ID="$(getent passwd "${USER_ID}" | cut -d: -f1)"
+if [ "${USER_WITH_ID}" != "" ]; then
+  deluser --remove-home "${USER_WITH_ID}"
+fi
+
+GROUP_WITH_ID="$(getent group "${GROUP_ID}" | cut -d: -f1)"
+if [ "${GROUP_WITH_ID}" != "" ]; then
+  delgroup "${GROUP_WITH_ID}"
+fi
+# ---------------------------------------
+
+# Add user ang group with input ids
+mkdir -p "${HOME}" "${WORKDIR}"
+
+addgroup \
+  --gid "${GROUP_ID}" \
+  --system \
+  "${USER_NAME}"
+
+adduser \
+  --uid "${USER_ID}" \
+  --system \
+  --disabled-password \
+  --no-create-home \
+  --ingroup "${USER_NAME}" \
+  --home "${HOME}" \
+  --shell /sbin/nologin \
+  --gecos "Container application user" \
+  "${USER_NAME}"
+
+chown -R "${USER_NAME}":"${USER_NAME}" "${HOME}" "${WORKDIR}"
