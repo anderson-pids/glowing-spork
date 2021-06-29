@@ -7,6 +7,9 @@
   <a href="https://aws.amazon.com/cli/">
         <img alt="AWS CLI" src="https://img.shields.io/badge/AWS-CLI-red.svg" target="_blank" />
   </a>
+  <a href="https://twitter.com/anderson_pids">
+    <img alt="Twitter: anderson_pids" src="https://img.shields.io/twitter/follow/anderson_pids?style=social" target="_blank" />
+  </a>
 </p>
 
 Glowing spork is an utility to generate temporary credencials for developers.
