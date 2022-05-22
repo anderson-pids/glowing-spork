@@ -12,3 +12,4 @@ build:
 .PHONY: aws-auth
 aws-auth: ${ensure-aws-folder}
 	@U_ID=$(shell id -u) G_ID=$(shell id -g) docker compose -f image/docker-compose.yml run --rm aws-auth ${username} ${mfa_code}
+	
