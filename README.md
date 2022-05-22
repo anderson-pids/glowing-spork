@@ -60,6 +60,13 @@ All environment variables:
 | AWS_TOKEN_DURATION | _129600_ | yes |
 | AWS_PROFILE | default | yes |
 
+
+## Troubleshooting
+
+1. `can't create /home/app/.aws/credentials: Permission denied`
+
+You must change permission for path _~/.aws/_.
+
 ---
 
 ## Contributing
